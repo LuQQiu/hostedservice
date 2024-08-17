@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 import lancedb
+import os
 
 app = FastAPI()
-db = lancedb.connect("/tmp/lancedb")
+database_path = os.getenv("DATABASE_PATH")
+db = lancedb.connect(database_path)
 
 @app.get("/")
 async def root():

@@ -162,18 +162,15 @@ Resources:
 
             # Set correct ownership
             chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
-
-            cat <<EOF > /home/ubuntu/hostedservice/global_conf.env
-            export APPLICATION_FOLDER=/home/ubuntu/hostedservice
-            export IMAGE_ID=${ImageId}
-            export PUBLIC_SUBNET=${PublicSubnet}
-            export KEY_PAIR_NAME=${KeyName}
-            export INSTANCE_TYPE=${InstanceType}
-            export SECURITY_GROUP=${ControlPlaneSecurityGroup}
-            export PYTHONPATH=/home/ubuntu/hostedservice/python
-            EOF
             
-            source /home/ubuntu/hostedservice/global_conf.env
+            sed -i "s|\${ImageId}|${ImageId}|g" /home/ubuntu/hostedservice/conf.env
+            sed -i "s|\${PublicSubnet}|${PublicSubnet}|g" /home/ubuntu/hostedservice/conf.env
+            sed -i "s|\${KeyName}|${KeyName}|g" /home/ubuntu/hostedservice/conf.env
+            sed -i "s|\${InstanceType}|${InstanceType}|g" /home/ubuntu/hostedservice/conf.env
+            sed -i "s|\${ControlPlaneSecurityGroup}|${ControlPlaneSecurityGroup}|g" /home/ubuntu/hostedservice/conf.env
+            sed -i "s|\${ApplicationZipUrl}|${ApplicationZipUrl}|g" /home/ubuntu/hostedservice/conf.env
+
+            source /home/ubuntu/hostedservice/conf.env
             
             # Install application dependencies
             pip3 install -r /home/ubuntu/hostedservice/python/requirements.txt
@@ -187,7 +184,8 @@ Resources:
             systemctl enable control_plane
 
             # Signal the status of the setup
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ControlPlaneInstance --region ${AWS::Region}
+            # TODO fix the notification
+            #/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ControlPlaneInstance --region ${AWS::Region}
 
             echo "User data script completed at $(date)" | tee -a /var/log/user-data.log
           - ApplicationZipUrl: !Ref ApplicationZipUrl
@@ -196,17 +194,18 @@ Resources:
             KeyName: !Ref KeyName
             InstanceType: !Ref InstanceType
             ControlPlaneSecurityGroup: !Ref ControlPlaneSecurityGroup
+            
+            # $SELECTION_PLACEHOLDER$
+            #   WaitConditionHandle:
+            #     Type: "AWS::CloudFormation::WaitConditionHandle"
 
-  WaitConditionHandle:
-    Type: "AWS::CloudFormation::WaitConditionHandle"
-
-  WaitCondition:
-    Type: "AWS::CloudFormation::WaitCondition"
-    DependsOn: ControlPlaneInstance
-    Properties:
-      Handle: !Ref WaitConditionHandle
-      Timeout: "300"
-      Count: "1"
+            #   WaitCondition:
+            #     Type: "AWS::CloudFormation::WaitCondition"
+            #     DependsOn: ControlPlaneInstance
+            #     Properties:
+            #       Handle: !Ref WaitConditionHandle
+            #       Timeout: "300"
+            #       Count: "1"
 
 Outputs:
   ControlPlaneURL:
