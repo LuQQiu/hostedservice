@@ -145,6 +145,9 @@ Resources:
             #!/bin/bash
           
             set -e
+            exec > >(tee -a /var/log/user-data.log /dev/ttyS0) 2>&1
+
+            echo "Starting user data script at $(date)" | tee -a /var/log/user-data.log
 
             # Update and install dependencies
             sudo apt update
@@ -154,13 +157,13 @@ Resources:
             wget ${ApplicationZipUrl} -O /home/ubuntu/main.zip
 
             # Unzip the application zip file
-            unzip /home/ubuntu/main.zip
+            unzip /home/ubuntu/main.zip -d /home/ubuntu
             mv /home/ubuntu/hostedservice-main /home/ubuntu/hostedservice
 
             # Set correct ownership
             chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
 
-            cat <<EOF >  /home/ubuntu/hostedservice/global_conf.env
+            cat <<EOF > /home/ubuntu/hostedservice/global_conf.env
             APPLICATION_FOLDER="/home/ubuntu/hostedservice"
             IMAGE_ID="${ImageId}"
             PUBLIC_SUBNET="${PublicSubnet}"
@@ -172,7 +175,7 @@ Resources:
             source /home/ubuntu/hostedservice/global_conf.env
             
             # Install application dependencies
-            pip3 install -r /home/ubuntu/hostedservice/requirements.txt
+            pip3 install -r /home/ubuntu/hostedservice/python/requirements.txt
 
             # Move service file to correct location
             mv /home/ubuntu/hostedservice/control_plane/control_plane.service /etc/systemd/system/control_plane.service
@@ -184,12 +187,25 @@ Resources:
 
             # Signal the status of the setup
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ControlPlaneInstance --region ${AWS::Region}
+
+            echo "User data script completed at $(date)" | tee -a /var/log/user-data.log
           - ApplicationZipUrl: !Ref ApplicationZipUrl
             ImageId: ami-0a0e5d9c7acc336f1
             PublicSubnet: !Ref PublicSubnet
             KeyName: !Ref KeyName
             InstanceType: !Ref InstanceType
             ControlPlaneSecurityGroup: !Ref ControlPlaneSecurityGroup
+
+  WaitConditionHandle:
+    Type: "AWS::CloudFormation::WaitConditionHandle"
+
+  WaitCondition:
+    Type: "AWS::CloudFormation::WaitCondition"
+    DependsOn: ControlPlaneInstance
+    Properties:
+      Handle: !Ref WaitConditionHandle
+      Timeout: "300"
+      Count: "1"
 
 Outputs:
   ControlPlaneURL:
