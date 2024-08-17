@@ -1,0 +1,205 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Control Plane with capability to create Database and Data Plane instances'
+
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: m5.4xlarge
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    Default: 0.0.0.0/0
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  ApplicationZipUrl:
+    Description: URL of the zip file containing the application code
+    Type: String
+    Default: https://github.com/yourusername/yourrepo/archive/hostedservice.zip
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: ControlPlaneVPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: ControlPlaneIG
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: ControlPlanePublicSubnet
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: ControlPlanePublicRT
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  ControlPlaneSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: "Control Plane Security Group"
+      GroupDescription: "Enable HTTP access via port 80 and SSH access"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: ControlPlaneSG
+
+  ControlPlaneRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2FullAccess
+        - arn:aws:iam::aws:policy/AmazonVPCFullAccess
+      Tags:
+        - Key: Name
+          Value: ControlPlaneRole
+
+  ControlPlaneInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref ControlPlaneRole
+
+  ControlPlaneInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: ami-0a0e5d9c7acc336f1
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet: 
+            - !Ref ControlPlaneSecurityGroup
+          SubnetId: !Ref PublicSubnet
+      IamInstanceProfile: !Ref ControlPlaneInstanceProfile
+      Tags:
+        - Key: Name
+          Value: ControlPlaneInstance
+      UserData:
+        Fn::Base64: !Sub 
+          - |
+            #!/bin/bash
+          
+            set -e
+
+            # Update and install dependencies
+            sudo apt update
+            sudo apt install -y python3 python3-pip unzip
+
+            # Download the application zip file
+            wget ${ApplicationZipUrl} -O /home/ubuntu/hostedservice.zip
+
+            # Unzip the application zip file
+            unzip /home/ubuntu/hostedservice.zip -d /home/ubuntu/
+
+            # Set correct ownership
+            chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
+
+            cat <<EOF >  /home/ubuntu/hostedservice/global_conf.env
+            APPLICATION_FOLDER="/home/ubuntu/hostedservice"
+            IMAGE_ID="${ImageId}"
+            PUBLIC_SUBNET="${PublicSubnet}"
+            KEY_PAIR_NAME="${KeyName}"
+            INSTANCE_TYPE="${InstanceType}"
+            SECURITY_GROUP="${ControlPlaneSecurityGroup}"
+            EOF
+            
+            source /home/ubuntu/hostedservice/global_conf.env
+            
+            # Install application dependencies
+            pip3 install -r /home/ubuntu/hostedservice/requirements.txt
+
+            # Move service file to correct location
+            mv /home/ubuntu/hostedservice/control_plane/control_plane.service /etc/systemd/system/control_plane.service
+
+            # Start and enable the service
+            systemctl daemon-reload
+            systemctl start control_plane
+            systemctl enable control_plane
+
+            # Signal the status of the setup
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ControlPlaneInstance --region ${AWS::Region}
+          - ApplicationZipUrl: !Ref ApplicationZipUrl
+            ImageId: ami-0a0e5d9c7acc336f1
+            PublicSubnet: !Ref PublicSubnet
+            KeyName: !Ref KeyName
+            InstanceType: !Ref InstanceType
+            ControlPlaneSecurityGroup: !Ref ControlPlaneSecurityGroup
+
+Outputs:
+  ControlPlaneURL:
+    Description: URL of the Control Plane
+    Value: !Sub http://${ControlPlaneInstance.PublicDnsName}
+  ControlPlaneInstanceId:
+    Description: Instance ID of the Control Plane
+    Value: !Ref ControlPlaneInstance
+  ControlPlanePublicIP:
+    Description: Public IP address of the Control Plane
+    Value: !GetAtt ControlPlaneInstance.PublicIp
+  ControlPlanePrivateIP:
+    Description: Private IP address of the Control Plane
+    Value: !GetAtt ControlPlaneInstance.PrivateIp

@@ -1,0 +1,14 @@
+[Unit]
+Description=Data Plane Service
+After=network.target
+
+[Service]
+User=ubuntu
+EnvironmentFile=/home/ubuntu/hostedservice/global_conf.env
+WorkingDirectory=/home/ubuntu/hostedservice/python/
+ExecStart=/usr/local/bin/uvicorn hosted.data_plane_app:app --host 0.0.0.0 --port 80
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
