@@ -20,7 +20,7 @@ Parameters:
   ApplicationZipUrl:
     Description: URL of the zip file containing the application code
     Type: String
-    Default: https://github.com/yourusername/yourrepo/archive/hostedservice.zip
+    Default: https://github.com/LuQQiu/hostedservice/archive/refs/heads/main.zip
 
 Resources:
   VPC:
@@ -151,10 +151,11 @@ Resources:
             sudo apt install -y python3 python3-pip unzip
 
             # Download the application zip file
-            wget ${ApplicationZipUrl} -O /home/ubuntu/hostedservice.zip
+            wget ${ApplicationZipUrl} -O /home/ubuntu/main.zip
 
             # Unzip the application zip file
-            unzip /home/ubuntu/hostedservice.zip -d /home/ubuntu/
+            unzip /home/ubuntu/main.zip
+            mv /home/ubuntu/hostedservice-main /home/ubuntu/hostedservice
 
             # Set correct ownership
             chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
