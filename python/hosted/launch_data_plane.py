@@ -2,6 +2,7 @@ import boto3
 import base64
 import requests
 import os
+import asyncio
 
 
 def get_region():
@@ -32,6 +33,7 @@ async def create_database_instance():
     instance_type = os.getenv('INSTANCE_TYPE')
     key_name = os.getenv('KEY_PAIR_NAME')
     security_group_ids = [os.getenv('SECURITY_GROUP')]
+    subnet_id = os.getenv('PUBLIC_SUBNET')
 
     # Create the EC2 instance
     instance = ec2.create_instances(
@@ -41,6 +43,7 @@ async def create_database_instance():
         MaxCount=1,
         KeyName=key_name,
         SecurityGroupIds=security_group_ids,
+        SubnetId=subnet_id,
         UserData=encoded_user_data
     )
 
@@ -55,3 +58,11 @@ async def create_database_instance():
     instance[0].reload()
     
     return instance_id, instance[0].public_ip_address
+
+# Main function to call the async function
+def main():
+    instance_id, public_ip = asyncio.run(create_database_instance())
+    print(f"Instance ID: {instance_id}, Public IP: {public_ip}")
+
+if __name__ == "__main__":
+    main()

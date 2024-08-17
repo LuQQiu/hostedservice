@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .database_manager import create_database_instance
+from .launch_data_plane import create_database_instance
 
 app = FastAPI()
 

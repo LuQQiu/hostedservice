@@ -8,7 +8,7 @@ Parameters:
   InstanceType:
     Description: EC2 instance type
     Type: String
-    Default: m5.4xlarge
+    Default: m5.xlarge
   SSHLocation:
     Description: The IP address range that can be used to SSH to the EC2 instances
     Type: String
@@ -164,12 +164,13 @@ Resources:
             chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
 
             cat <<EOF > /home/ubuntu/hostedservice/global_conf.env
-            APPLICATION_FOLDER="/home/ubuntu/hostedservice"
-            IMAGE_ID="${ImageId}"
-            PUBLIC_SUBNET="${PublicSubnet}"
-            KEY_PAIR_NAME="${KeyName}"
-            INSTANCE_TYPE="${InstanceType}"
-            SECURITY_GROUP="${ControlPlaneSecurityGroup}"
+            export APPLICATION_FOLDER=/home/ubuntu/hostedservice
+            export IMAGE_ID=${ImageId}
+            export PUBLIC_SUBNET=${PublicSubnet}
+            export KEY_PAIR_NAME=${KeyName}
+            export INSTANCE_TYPE=${InstanceType}
+            export SECURITY_GROUP=${ControlPlaneSecurityGroup}
+            export PYTHONPATH=/home/ubuntu/hostedservice/python
             EOF
             
             source /home/ubuntu/hostedservice/global_conf.env
