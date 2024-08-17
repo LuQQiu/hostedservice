@@ -18,15 +18,14 @@ wget "${ApplicationZipUrl}" -O /home/ubuntu/main.zip || { echo "Failed to downlo
 
 # Unzip the application zip file
 echo "Unzipping application"
-unzip -v /home/ubuntu/main.zip -d /home/ubuntu || { echo "Failed to unzip file"; exit 1; }
 
 # Find the correct folder name after unzipping
-unzipped_folder=$(find /home/ubuntu -maxdepth 1 -type d -name "*hostedservice*")
-if [ -z "$unzipped_folder" ]; then
-    echo "Could not find hostedservice folder"
-    ls -la /home/ubuntu
-    exit 1
-fi
+unzip /home/ubuntu/main.zip -d /home/ubuntu
+mv /home/ubuntu/hostedservice-main /home/ubuntu/hostedservice
+
+# Set correct ownership
+chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
+chmod 777 /home/ubuntu/hostedservice/conf.env
 
 # Move the unzipped folder to the correct location
 mv "$unzipped_folder" /home/ubuntu/hostedservice

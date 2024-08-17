@@ -178,11 +178,13 @@ Resources:
             APPLICATION_ZIP_URL=${ApplicationZipUrl}
 
             # This line allows the file to be sourced in bash without affecting its use in systemd
-            [ "\$BASH_VERSION" ] && export \$(sed 's/=.*//' "\$0")
+            export APPLICATION_FOLDER PYTHONPATH IMAGE_ID PUBLIC_SUBNET KEY_PAIR_NAME INSTANCE_TYPE SECURITY_GROUP APPLICATION_ZIP_URL DATABASE_PATH
             EOF
 
             # Debugging output to verify the new content of conf.env
             cat /home/ubuntu/hostedservice/conf.env
+
+            source /home/ubuntu/hostedservice/conf.env
             
             # Install application dependencies
             pip3 install -r /home/ubuntu/hostedservice/python/requirements.txt
