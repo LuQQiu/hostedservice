@@ -50,7 +50,7 @@ source /home/ubuntu/hostedservice/conf.env
 pip3 install -r /home/ubuntu/hostedservice/python/requirements.txt
 
 # Move service file to correct location
-mv "${APPLICATION_FOLDER}/data_plane/data_plane.service" /etc/systemd/system/data_plane.service
+mv /home/ubuntu/hostedservice/data_plane/data_plane.service /etc/systemd/system/data_plane.service
 
 # Start and enable the service
 systemctl daemon-reload
