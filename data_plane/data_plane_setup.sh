@@ -27,20 +27,23 @@ mv /home/ubuntu/hostedservice-main /home/ubuntu/hostedservice
 chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
 chmod 777 /home/ubuntu/hostedservice/conf.env
 
-# Move the unzipped folder to the correct location
-mv "$unzipped_folder" /home/ubuntu/hostedservice
+cat <<EOF > /home/ubuntu/hostedservice/conf.env
+# This file is compatible with both systemd and bash sourcing
+APPLICATION_FOLDER=/home/ubuntu/hostedservice
+PYTHONPATH=/home/ubuntu/hostedservice/python
 
-# Set correct ownership
-chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
+# Control plane
+IMAGE_ID=${IMAGE_ID}
+PUBLIC_SUBNET=${PUBLIC_SUBNET}
+KEY_PAIR_NAME=${KEY_PAIR_NAME}
+INSTANCE_TYPE=${INSTANCE_TYPE}
+SECURITY_GROUP=${SECURITY_GROUP}
+APPLICATION_ZIP_URL=${APPLICATION_ZIP_URL}
+DATABASE_PATH=${DATABASE_PATH}
 
-# Update conf.env
-sed -i "s|\${DatabasePath}|${DatabasePath}|g" /home/ubuntu/hostedservice/conf.env
-sed -i "s|\${ApplicationZipUrl}|${ApplicationZipUrl}|g" /home/ubuntu/hostedservice/conf.env
-sed -i "s|\${ImageId}|${IMAGE_ID}|g" /home/ubuntu/hostedservice/conf.env
-sed -i "s|\${PublicSubnet}|${PUBLIC_SUBNET}|g" /home/ubuntu/hostedservice/conf.env
-sed -i "s|\${KeyName}|${KEY_PAIR_NAME}|g" /home/ubuntu/hostedservice/conf.env
-sed -i "s|\${InstanceType}|${INSTANCE_TYPE}|g" /home/ubuntu/hostedservice/conf.env
-sed -i "s|\${ControlPlaneSecurityGroup}|${SECURITY_GROUP}|g" /home/ubuntu/hostedservice/conf.env
+# This line allows the file to be sourced in bash without affecting its use in systemd
+export APPLICATION_FOLDER PYTHONPATH IMAGE_ID PUBLIC_SUBNET KEY_PAIR_NAME INSTANCE_TYPE SECURITY_GROUP APPLICATION_ZIP_URL DATABASE_PATH
+EOF
 
 # Source the configuration
 source /home/ubuntu/hostedservice/conf.env
