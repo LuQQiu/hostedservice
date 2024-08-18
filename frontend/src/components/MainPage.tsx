@@ -1,80 +1,128 @@
 import React, { useState } from 'react';
-
-interface MainPageProps {
-  username: string;
-}
+import TopNavBar from './TopNavBar';
 
 interface Database {
   id: number;
-  name: string;
+  databasePath: string;
+  status: string;
 }
 
 const MainPage: React.FC<MainPageProps> = ({ username }) => {
-  const [databases, setDatabases] = useState<Database[]>([
-    { id: 1, name: '/tmp/database 1' },
-    { id: 2, name: '/tmp/database 2' }
-  ]);
-  const [newDatabaseName, setNewDatabaseName] = useState('');
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [databases, setDatabases] = useState<Database[]>([]);
+  const [newDatabasePath, setNewDatabasePath] = useState('');
 
-  const handleCreateDatabase = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newDatabaseName.trim()) {
+  const handleCreateDatabase = () => {
+    if (newDatabasePath.trim()) {
       const newDatabase: Database = {
         id: Date.now(),
-        name: newDatabaseName.trim()
+        databasePath: newDatabasePath.trim(),
+        status: 'Ready',
       };
-      setDatabases([...databases, newDatabase]);
-      setNewDatabaseName('');
+      setDatabases(prevDatabases => [...prevDatabases, newDatabase]);
+      setNewDatabasePath('');
     }
   };
 
   const handleDeleteDatabase = (id: number) => {
-    setDatabases(databases.filter(db => db.id !== id));
+    setDatabases(prevDatabases => prevDatabases.filter(db => db.id !== id));
   };
 
-  return (
-    <div className="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold mb-6">Welcome, {username}!</h1>
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Create New Database</h2>
-        <form onSubmit={handleCreateDatabase} className="flex gap-4">
-          <input
-            type="text"
-            value={newDatabaseName}
-            onChange={(e) => setNewDatabaseName(e.target.value)}
-            placeholder="Enter database name"
-            className="flex-grow px-3 py-2 border rounded-lg"
-          />
-          <button type="submit" className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition duration-200">
-            Create
-          </button>
-        </form>
+  const renderDatabaseContent = () => (
+    <div style={{ padding: '24px', width: '90%', maxWidth: '90%' }}>
+      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Databases</h2>
+      <div style={{ display: 'flex', marginBottom: '32px', width: '90%' }}>
+        <input
+          type="text"
+          value={newDatabasePath}
+          onChange={(e) => setNewDatabasePath(e.target.value)}
+          placeholder="Enter database path"
+          style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px 0 0 4px' }}
+        />
+        <button 
+          onClick={handleCreateDatabase}
+          style={{ 
+            backgroundColor: '#3b82f6', 
+            color: 'white', 
+            padding: '8px 16px', 
+            borderRadius: '0 4px 4px 0',
+            border: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          Create
+        </button>
       </div>
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Your Databases</h2>
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th className="text-left font-semibold pb-2">Database Name</th>
-              <th className="w-24"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {databases.map(db => (
-              <tr key={db.id} className="border-t">
-                <td className="py-3">{db.name}</td>
-                <td className="py-3 text-right">
-                  <button
-                    onClick={() => handleDeleteDatabase(db.id)}
-                    className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 transition duration-200"
-                  >
-                    Delete
-                  </button>
-                </td>
+      {databases.length > 0 ? (
+        <div style={{ overflowX: 'auto', width: '90%' }}>
+          <table style={{ width: '90%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
+            <thead>
+              <tr style={{ backgroundColor: '#f3f4f6' }}>
+                <th style={{ textAlign: 'left', padding: '12px', width: '50%', minWidth: '300px' }}>Database Path</th>
+                <th style={{ textAlign: 'left', padding: '12px', width: '25%', minWidth: '150px' }}>Status</th>
+                <th style={{ textAlign: 'left', padding: '12px', width: '25%', minWidth: '100px' }}>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {databases.map(db => (
+                <tr key={db.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                  <td style={{ padding: '12px', minWidth: '300px' }}>{db.databasePath}</td>
+                  <td style={{ padding: '12px', minWidth: '150px' }}>{db.status}</td>
+                  <td style={{ padding: '12px', minWidth: '100px' }}>
+                    <button
+                      onClick={() => handleDeleteDatabase(db.id)}
+                      style={{ 
+                        backgroundColor: '#ef4444', 
+                        color: 'white', 
+                        padding: '4px 8px', 
+                        borderRadius: '4px',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p>No databases created yet.</p>
+      )}
+    </div>
+  );
+
+  const renderDefaultContent = () => (
+    <div style={{ padding: '24px' }}>
+      <h2 style={{ fontSize: '30px', fontWeight: 'bold' }}>Welcome, Lu!</h2>
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <div style={{ display: 'flex', flexGrow: 1 }}>
+        <div style={{ width: '256px', backgroundColor: '#f3f4f6', padding: '16px', flexShrink: 0 }}>
+          <button
+            style={{
+              width: '90%',
+              textAlign: 'left',
+              padding: '8px',
+              borderRadius: '4px',
+              backgroundColor: activeMenu === 'databases' ? '#3b82f6' : 'transparent',
+              color: activeMenu === 'databases' ? 'white' : 'black',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+            onClick={() => setActiveMenu('databases')}
+          >
+            DATABASES
+          </button>
+        </div>
+        <div style={{ flexGrow: 1, backgroundColor: 'white', overflowX: 'auto' }}>
+          {activeMenu === 'databases' ? renderDatabaseContent() : renderDefaultContent()}
+        </div>
       </div>
     </div>
   );
