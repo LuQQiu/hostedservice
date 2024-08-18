@@ -33,11 +33,11 @@ const MainPage: React.FC<MainPageProps> = ({ username }) => {
   };
 
   const handleLogoClick = () => {
-    setActiveMenu(null); // Set activeMenu to null to return to the welcome page
+    setActiveMenu(null);
   };
 
   const renderDatabaseContent = () => (
-    <div style={{ padding: '24px', width: '90%', maxWidth: '90%' }}>
+    <div style={{ padding: '24px', width: '90%' }}>
       <h2 style={{ fontSize: '24px', marginBottom: '16px' }}>Databases</h2>
       <div style={{ display: 'flex', marginBottom: '32px', width: '90%' }}>
         <input
@@ -65,18 +65,18 @@ const MainPage: React.FC<MainPageProps> = ({ username }) => {
         <div style={{ overflowX: 'auto', width: '90%' }}>
           <table style={{ width: '90%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
             <thead>
-              <tr style={{ backgroundColor: '#f3f4f6' }}>
-                <th style={{ textAlign: 'left', padding: '12px', width: '50%', minWidth: '300px' }}>Database Path</th>
-                <th style={{ textAlign: 'left', padding: '12px', width: '25%', minWidth: '150px' }}>Status</th>
-                <th style={{ textAlign: 'left', padding: '12px', width: '25%', minWidth: '100px' }}>Action</th>
+              <tr style={{ backgroundColor: '#e5e7eb' }}>
+                <th style={{ textAlign: 'left', padding: '12px', width: '50%' }}>Database Path</th>
+                <th style={{ textAlign: 'left', padding: '12px', width: '25%' }}>Status</th>
+                <th style={{ textAlign: 'left', padding: '12px', width: '25%' }}>Action</th>
               </tr>
             </thead>
             <tbody>
               {databases.map(db => (
                 <tr key={db.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                  <td style={{ padding: '12px', minWidth: '300px' }}>{db.databasePath}</td>
-                  <td style={{ padding: '12px', minWidth: '150px' }}>{db.status}</td>
-                  <td style={{ padding: '12px', minWidth: '100px' }}>
+                  <td style={{ padding: '12px' }}>{db.databasePath}</td>
+                  <td style={{ padding: '12px' }}>{db.status}</td>
+                  <td style={{ padding: '12px' }}>
                     <button
                       onClick={() => handleDeleteDatabase(db.id)}
                       style={{ 
@@ -114,24 +114,26 @@ const MainPage: React.FC<MainPageProps> = ({ username }) => {
       <div style={{ display: 'flex', flexGrow: 1 }}>
         <div
           style={{
-            width: '200px',
-            backgroundColor: 'white', // Sidebar is always white
-            padding: '0', // Remove padding to avoid any space around the button
+            width: '20%', // Changed from fixed 200px to 20%
+            minWidth: '200px', // Ensures a minimum width
+            maxWidth: '300px', // Limits the maximum width
+            backgroundColor: 'white',
+            padding: '0',
             flexShrink: 0,
           }}
         >
           <button
             style={{
-              width: '100%', // Button takes up the full width of the sidebar
+              width: '100%',
               textAlign: 'left',
-              padding: '8px',
-              borderRadius: '0', // Remove border-radius to avoid rounding at the edges
-              backgroundColor: activeMenu === 'databases' ? '#f3f4f6' : 'transparent', // Button background becomes grey when active
+              padding: '8px 16px', // Added horizontal padding
+              borderRadius: '0',
+              backgroundColor: activeMenu === 'databases' ? '#f3f4f6' : 'transparent',
               color: 'black',
               border: 'none',
               cursor: 'pointer',
-              fontSize: '24px', // Matches the font size of "Welcome, Lu!"
-              marginTop: '24px', // Adds some space below the top bar
+              fontSize: '24px',
+              marginTop: '24px',
             }}
             onClick={() => setActiveMenu('databases')}
           >
@@ -141,9 +143,9 @@ const MainPage: React.FC<MainPageProps> = ({ username }) => {
         <div
           style={{
             flexGrow: 1,
-            backgroundColor: '#f3f4f6', // Right content area is always grey
+            backgroundColor: '#f3f4f6',
             overflowX: 'auto',
-            padding: '24px', // Adds padding for consistency
+            padding: '24px',
           }}
         >
           {activeMenu === 'databases' ? renderDatabaseContent() : renderDefaultContent()}
