@@ -7,6 +7,10 @@ interface Database {
   status: string;
 }
 
+interface MainPageProps {
+  username: string;
+}
+
 const MainPage: React.FC<MainPageProps> = ({ username }) => {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [databases, setDatabases] = useState<Database[]>([]);
@@ -28,9 +32,13 @@ const MainPage: React.FC<MainPageProps> = ({ username }) => {
     setDatabases(prevDatabases => prevDatabases.filter(db => db.id !== id));
   };
 
+  const handleLogoClick = () => {
+    setActiveMenu(null); // Set activeMenu to null to return to the welcome page
+  };
+
   const renderDatabaseContent = () => (
     <div style={{ padding: '24px', width: '90%', maxWidth: '90%' }}>
-      <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>Databases</h2>
+      <h2 style={{ fontSize: '24px', marginBottom: '16px' }}>Databases</h2>
       <div style={{ display: 'flex', marginBottom: '32px', width: '90%' }}>
         <input
           type="text"
@@ -95,32 +103,49 @@ const MainPage: React.FC<MainPageProps> = ({ username }) => {
   );
 
   const renderDefaultContent = () => (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: '24px', width: '90%' }}>
       <h2 style={{ fontSize: '30px', fontWeight: 'bold' }}>Welcome, Lu!</h2>
     </div>
   );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <TopNavBar onLogoClick={handleLogoClick} />
       <div style={{ display: 'flex', flexGrow: 1 }}>
-        <div style={{ width: '256px', backgroundColor: '#f3f4f6', padding: '16px', flexShrink: 0 }}>
+        <div
+          style={{
+            width: '200px',
+            backgroundColor: 'white', // Sidebar is always white
+            padding: '0', // Remove padding to avoid any space around the button
+            flexShrink: 0,
+          }}
+        >
           <button
             style={{
-              width: '90%',
+              width: '100%', // Button takes up the full width of the sidebar
               textAlign: 'left',
               padding: '8px',
-              borderRadius: '4px',
-              backgroundColor: activeMenu === 'databases' ? '#3b82f6' : 'transparent',
-              color: activeMenu === 'databases' ? 'white' : 'black',
+              borderRadius: '0', // Remove border-radius to avoid rounding at the edges
+              backgroundColor: activeMenu === 'databases' ? '#f3f4f6' : 'transparent', // Button background becomes grey when active
+              color: 'black',
               border: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              fontSize: '24px', // Matches the font size of "Welcome, Lu!"
+              marginTop: '24px', // Adds some space below the top bar
             }}
             onClick={() => setActiveMenu('databases')}
           >
-            DATABASES
+            Databases
           </button>
         </div>
-        <div style={{ flexGrow: 1, backgroundColor: 'white', overflowX: 'auto' }}>
+        <div
+          style={{
+            flexGrow: 1,
+            backgroundColor: '#f3f4f6', // Right content area is always grey
+            overflowX: 'auto',
+            padding: '24px', // Adds padding for consistency
+          }}
+        >
           {activeMenu === 'databases' ? renderDatabaseContent() : renderDefaultContent()}
         </div>
       </div>
