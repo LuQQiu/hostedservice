@@ -19,17 +19,35 @@ nvm use --lts
 # Verify installation
 node -v
 npm -v
+npm install -g pm2
 
 # Install project dependencies and build the project
 cd /home/ubuntu/hostedservice/frontend
-npm install
 npm run build
 
-# Serve the application using PM2
-pm2 serve build 5173 --spa --name "react-frontend"
+sudo apt-get install -y nginx
 
-# Ensure PM2 starts on system boot
-pm2 startup
-pm2 save
+mkdir -p /etc/nginx/sites-available
+mkdir -p /etc/nginx/sites-enabled
+
+tee /etc/nginx/sites-available/react-frontend > /dev/null <<EOF
+server {
+    listen 5173;
+    server_name _;
+
+    root /home/ubuntu/hostedservice/frontend/dist;
+    index index.html;
+
+    location / {
+        try_files $uri /index.html;
+    }
+}
+
+EOF
+
+ln -s /etc/nginx/sites-available/react-frontend /etc/nginx/sites-enabled/
+
+systemctl restart nginx
 
 echo "Installation script completed at $(date)" | tee -a /var/log/install.log
+

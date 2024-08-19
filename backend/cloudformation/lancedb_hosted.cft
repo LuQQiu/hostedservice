@@ -198,8 +198,8 @@ Resources:
             systemctl enable control_plane
 
             # Install frontend
-            chmod +x /home/ubuntu/hostedservice/backend/launch_frontend.sh
-            /home/ubuntu/hostedservice/backend/launch_frontend.sh
+            chmod +x /home/ubuntu/hostedservice/backend/control_plane/launch_frontend.sh
+            /home/ubuntu/hostedservice/backend/control_plane/launch_frontend.sh
 
             # Signal the status of the setup
             pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
@@ -215,7 +215,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Count: 1
-        Timeout: PT15M
+        Timeout: PT30M
 
 Outputs:
   ControlPlaneURL:
