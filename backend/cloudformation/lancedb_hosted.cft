@@ -197,9 +197,31 @@ Resources:
             systemctl start control_plane
             systemctl enable control_plane
 
+            # Install frontend
+            apt install -y nodejs npm
+
+            # Install PM2 globally
+            npm install -y pm2 -g
+
+            # Navigate to the frontend directory
+            cd /home/ubuntu/hostedservice/frontend
+
+            # Install dependencies
+            npm install
+
+            # Build the React app
+            npm run build
+
+            # Use PM2 to serve the built React app
+            pm2 serve build 5173 --spa --name "react-frontend"
+
+            # Ensure PM2 starts on system boot
+            pm2 startup
+            pm2 save
+
             # Signal the status of the setup
-            # TODO fix the notification
-            #/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ControlPlaneInstance --region ${AWS::Region}
+            pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+            /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ControlPlaneInstance --region ${AWS::Region}
 
             echo "User data script completed at $(date)" | tee -a /var/log/user-data.log
           - ApplicationZipUrl: !Ref ApplicationZipUrl
@@ -208,11 +230,15 @@ Resources:
             KeyName: !Ref KeyName
             InstanceType: !Ref InstanceType
             ControlPlaneSecurityGroup: !Ref ControlPlaneSecurityGroup
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT15M
 
 Outputs:
   ControlPlaneURL:
     Description: URL of the Control Plane
-    Value: !Sub http://${ControlPlaneInstance.PublicDnsName}
+    Value: !Sub http://${ControlPlaneInstance.PublicDnsName}:5173/
   ControlPlaneInstanceId:
     Description: Instance ID of the Control Plane
     Value: !Ref ControlPlaneInstance
