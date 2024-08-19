@@ -19,16 +19,22 @@ nvm use --lts
 # Verify installation
 node -v
 npm -v
-npm install -g pm2
+npm install -g pm2 typescript
+apt-get install -y nginx
 
 # Install project dependencies and build the project
 cd /home/ubuntu/hostedservice/frontend
+npm install react react-dom
+npm install --save-dev @types/react @types/react-dom
 npm run build
-
-sudo apt-get install -y nginx
 
 mkdir -p /etc/nginx/sites-available
 mkdir -p /etc/nginx/sites-enabled
+
+# TODO workardound for permission issue for now
+sudo chmod 777 /home
+sudo chmod 777 /home/ubuntu
+sudo chmod 777 /home/ubuntu/hostedservice
 
 tee /etc/nginx/sites-available/react-frontend > /dev/null <<EOF
 server {
@@ -39,13 +45,14 @@ server {
     index index.html;
 
     location / {
-        try_files $uri /index.html;
+        try_files \$uri \$uri/ /index.html;
     }
 }
 
 EOF
 
 ln -s /etc/nginx/sites-available/react-frontend /etc/nginx/sites-enabled/
+
 
 systemctl restart nginx
 
