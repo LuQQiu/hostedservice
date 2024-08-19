@@ -198,26 +198,8 @@ Resources:
             systemctl enable control_plane
 
             # Install frontend
-            apt install -y nodejs npm
-
-            # Install PM2 globally
-            npm install -y pm2 -g
-
-            # Navigate to the frontend directory
-            cd /home/ubuntu/hostedservice/frontend
-
-            # Install dependencies
-            npm install
-
-            # Build the React app
-            npm run build
-
-            # Use PM2 to serve the built React app
-            pm2 serve build 5173 --spa --name "react-frontend"
-
-            # Ensure PM2 starts on system boot
-            pm2 startup
-            pm2 save
+            chmod +x /home/ubuntu/hostedservice/backend/launch_frontend.sh
+            /home/ubuntu/hostedservice/backend/launch_frontend.sh
 
             # Signal the status of the setup
             pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
