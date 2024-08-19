@@ -1,43 +1,68 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import loginImage from '../assets/images/login.jpg';
 
 interface LoginPageProps {
-  onLogin: (username: string) => void;
-}
-
-interface User {
-  username: string;
-  password: string;
+  onLogin: (username: string, token: string) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (isSignUp) {
-      // Sign Up
-      if (users.some(user => user.username === username)) {
-        setError('Username already exists');
-      } else {
-        setUsers([...users, { username, password }]);
+    const formData = new URLSearchParams();
+    formData.append('username', username);
+    formData.append('password', password);
+
+    try {
+      if (isSignUp) {
+        // Sign Up
+        const signupResponse = await axios.post('http://localhost:8080/signup', formData, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          withCredentials: true  // Important for CORS
+        });
+        console.log('Signup response:', signupResponse.data);
         setIsSignUp(false);
         setUsername('');
         setPassword('');
-      }
-    } else {
-      // Sign In
-      const user = users.find(u => u.username === username && u.password === password);
-      if (user) {
-        onLogin(username);
+        setError('Signup successful. Please log in.');
       } else {
-        setError('Invalid username or password');
+        // Sign In
+        const loginResponse = await axios.post('http://localhost:8080/token', formData, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          withCredentials: true  // Important for CORS
+        });
+        console.log('Login response:', loginResponse.data);
+        const { access_token } = loginResponse.data;
+        if (access_token) {
+          onLogin(username, access_token);
+        } else {
+          setError('Login successful, but no token received. Please try again.');
+        }
+      }
+    } catch (err: any) {
+      console.error('Error details:', err);
+      if (err.response) {
+        console.error('Response data:', err.response.data);
+        console.error('Response status:', err.response.status);
+        console.error('Response headers:', err.response.headers);
+        setError(err.response.data.detail || `An error occurred: ${err.response.status}`);
+      } else if (err.request) {
+        console.error('Request made but no response received');
+        setError('No response from server. Please check your connection.');
+      } else {
+        console.error('Error setting up request:', err.message);
+        setError(`Error: ${err.message}`);
       }
     }
   };

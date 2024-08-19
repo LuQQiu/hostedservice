@@ -5,10 +5,12 @@ import MainPage from './components/MainPage';
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
+  const [token, setToken] = useState<string>('');
 
-  const handleLogin = (user: string) => {
+  const handleLogin = (user: string, accessToken: string) => {
     setIsLoggedIn(true);
     setUsername(user);
+    setToken(accessToken);
   };
 
   return (
@@ -17,7 +19,7 @@ const App: React.FC = () => {
         {!isLoggedIn ? (
           <LoginPage onLogin={handleLogin} />
         ) : (
-          <MainPage username={username} />
+          <MainPage username={username} token={token} />
         )}
       </div>
     </div>

@@ -6,7 +6,7 @@ After=network.target
 User=ubuntu
 EnvironmentFile=/home/ubuntu/hostedservice/backend/conf.env
 WorkingDirectory=/home/ubuntu/hostedservice/backend/python/
-ExecStart=/usr/local/bin/uvicorn hosted.control_plane_app:app --host 0.0.0.0 --port 8080
+ExecStart=/usr/local/bin/uvicorn hosted.control.control_plane_app:app --host 0.0.0.0 --port 8080
 Restart=always
 RestartSec=10
 

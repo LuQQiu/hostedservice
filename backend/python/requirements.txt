@@ -4,3 +4,6 @@ boto3
 requests
 lancedb
 pandas
+passlib 
+python-jose[cryptography]
+python-multipart
