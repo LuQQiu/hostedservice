@@ -39,33 +39,43 @@ const MainPage: React.FC<MainPageProps> = ({ username }) => {
   const renderDatabaseContent = () => (
     <div style={{ padding: '24px', width: '90%' }}>
       <h2 style={{ fontSize: '24px', marginBottom: '16px' }}>Databases</h2>
-      <div style={{ display: 'flex', marginBottom: '32px', width: '90%' }}>
-        <input
-          type="text"
-          value={newDatabasePath}
-          onChange={(e) => setNewDatabasePath(e.target.value)}
-          placeholder="Enter database path"
-          style={{ flexGrow: 1, padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px 0 0 4px' }}
-        />
-        <button 
-          onClick={handleCreateDatabase}
-          style={{ 
-            backgroundColor: '#3b82f6', 
-            color: 'white', 
-            padding: '8px 16px', 
-            borderRadius: '0 4px 4px 0',
-            border: 'none',
-            cursor: 'pointer'
-          }}
-        >
-          Create
-        </button>
+      <div style={{ marginBottom: '32px', width: '90%' }}>
+        <div style={{ display: 'flex', width: '90%' }}>
+          <input
+            type="text"
+            value={newDatabasePath}
+            onChange={(e) => setNewDatabasePath(e.target.value)}
+            placeholder="Enter database path"
+            style={{ 
+              flexGrow: 1,
+              padding: '8px 12px',
+              border: '1px solid #ccc',
+              borderRadius: '4px 0 0 4px',
+              fontSize: '14px'
+            }}
+          />
+          <button 
+            onClick={handleCreateDatabase}
+            style={{ 
+              backgroundColor: '#3b82f6', 
+              color: 'white', 
+              padding: '8px 16px', 
+              borderRadius: '0 4px 4px 0',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Create
+          </button>
+        </div>
       </div>
       {databases.length > 0 ? (
-        <div style={{ overflowX: 'auto', width: '90%' }}>
+        <div style={{ width: '90%' }}>
           <table style={{ width: '90%', borderCollapse: 'separate', borderSpacing: '0 8px' }}>
             <thead>
-              <tr style={{ backgroundColor: '#e5e7eb' }}>
+              <tr style={{ backgroundColor: '#f3f4f6' }}>
                 <th style={{ textAlign: 'left', padding: '12px', width: '50%' }}>Database Path</th>
                 <th style={{ textAlign: 'left', padding: '12px', width: '25%' }}>Status</th>
                 <th style={{ textAlign: 'left', padding: '12px', width: '25%' }}>Action</th>
@@ -85,7 +95,8 @@ const MainPage: React.FC<MainPageProps> = ({ username }) => {
                         padding: '4px 8px', 
                         borderRadius: '4px',
                         border: 'none',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        fontSize: '14px'
                       }}
                     >
                       Delete
