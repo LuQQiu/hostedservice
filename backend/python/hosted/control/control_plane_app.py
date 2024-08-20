@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from hosted.common.auth import auth_router
 from .database_ops import db_router
+import os
 
 app = FastAPI()
 

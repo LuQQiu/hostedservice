@@ -33,7 +33,7 @@ async def create_database_instance(database_path):
     app_folder = os.getenv('APPLICATION_FOLDER', '/home/ubuntu/hostedservice')
     
     # Read the user data script
-    with open(os.path.join(app_folder, 'data_plane', 'data_plane_setup.sh'), 'r') as file:
+    with open(os.path.join(app_folder, 'backend', 'data_plane', 'data_plane_setup.sh'), 'r') as file:
         user_data_script = file.read()
 
     # Prepare environment variables
@@ -75,7 +75,7 @@ async def create_database_instance(database_path):
             KeyName=os.getenv('KEY_PAIR_NAME'),
             SecurityGroupIds=[os.getenv('SECURITY_GROUP')],
             SubnetId=os.getenv('PUBLIC_SUBNET'),
-            UserData=encoded_user_data
+            UserData=encoded_user_data,
             TagSpecifications=[
                 {
                     'ResourceType': 'instance',

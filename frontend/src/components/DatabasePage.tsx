@@ -3,8 +3,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config';
 
 interface Database {
-  id: number;
-  databasePath: string;
+  path: string;
   status: string;
 }
 
@@ -18,6 +17,8 @@ const DatabasePage: React.FC<DatabasePageProps> = ({ token }) => {
 
   useEffect(() => {
     fetchDatabases();
+    const interval = setInterval(fetchDatabases, 5000); // Poll every 5 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const fetchDatabases = async () => {
@@ -44,8 +45,8 @@ const DatabasePage: React.FC<DatabasePageProps> = ({ token }) => {
             'Authorization': `Bearer ${token}`
           }
         });
-        fetchDatabases(); // Refresh the list after creating
         setNewDatabasePath('');
+        fetchDatabases(); // Refresh the list immediately to show the new "In Progress" database
       } catch (error) {
         console.error('Error creating database:', error);
       }
@@ -115,24 +116,32 @@ const DatabasePage: React.FC<DatabasePageProps> = ({ token }) => {
             </thead>
             <tbody>
               {databases.map(db => (
-                <tr key={db.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                  <td style={{ padding: '12px' }}>{db.databasePath}</td>
-                  <td style={{ padding: '12px' }}>{db.status}</td>
+                <tr key={db.path} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                  <td style={{ padding: '12px' }}>{db.path}</td>
                   <td style={{ padding: '12px' }}>
-                    <button
-                      onClick={() => handleDeleteDatabase(db.databasePath)}
-                      style={{
-                        backgroundColor: '#ef4444',
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                      }}
-                    >
-                      Delete
-                    </button>
+                    {db.status === 'In Progress' ? (
+                      <span style={{ color: 'orange' }}>In Progress</span>
+                    ) : (
+                      <span style={{ color: 'green' }}>Created</span>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    {db.status !== 'In Progress' && (
+                      <button
+                        onClick={() => handleDeleteDatabase(db.path)}
+                        style={{
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '14px'
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
