@@ -26,15 +26,16 @@ apt-get install -y nginx
 cd /home/ubuntu/hostedservice/frontend
 npm install react react-dom
 npm install --save-dev @types/react @types/react-dom
+pip3 install setuptools==58.0.4
 npm run build
 
 mkdir -p /etc/nginx/sites-available
 mkdir -p /etc/nginx/sites-enabled
 
 # TODO workardound for permission issue for now
-sudo chmod 777 /home
-sudo chmod 777 /home/ubuntu
-sudo chmod 777 /home/ubuntu/hostedservice
+chmod 777 /home
+chmod 777 /home/ubuntu
+chmod 777 /home/ubuntu/hostedservice
 
 tee /etc/nginx/sites-available/react-frontend > /dev/null <<EOF
 server {
@@ -46,6 +47,14 @@ server {
 
     location / {
         try_files \$uri \$uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 interface Database {
   id: number;
@@ -21,7 +22,7 @@ const DatabasePage: React.FC<DatabasePageProps> = ({ token }) => {
 
   const fetchDatabases = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/list_databases', {
+      const response = await axios.get(`${API_BASE_URL}/list_databases`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -35,7 +36,7 @@ const DatabasePage: React.FC<DatabasePageProps> = ({ token }) => {
   const handleCreateDatabase = async () => {
     if (newDatabasePath.trim()) {
       try {
-        await axios.post('http://localhost:8080/create_database', null, {
+        await axios.post(`${API_BASE_URL}/create_database`, null, {
           params: {
             database_path: newDatabasePath.trim()
           },
@@ -53,7 +54,7 @@ const DatabasePage: React.FC<DatabasePageProps> = ({ token }) => {
 
   const handleDeleteDatabase = async (databasePath: string) => {
     try {
-      await axios.delete('http://localhost:8080/delete_database', {
+      await axios.delete(`${API_BASE_URL}/delete_database`, {
         params: {
           database_path: databasePath
         },

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import loginImage from '../assets/images/login.jpg';
+import { API_BASE_URL } from '../config';
 
 interface LoginPageProps {
   onLogin: (username: string, token: string) => void;
@@ -23,11 +24,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     try {
       if (isSignUp) {
         // Sign Up
-        const signupResponse = await axios.post('http://localhost:8080/signup', formData, {
+        const signupResponse = await axios.post(`${API_BASE_URL}/signup`, formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
-          withCredentials: true  // Important for CORS
+          withCredentials: true
         });
         console.log('Signup response:', signupResponse.data);
         setIsSignUp(false);
@@ -36,11 +37,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         setError('Signup successful. Please log in.');
       } else {
         // Sign In
-        const loginResponse = await axios.post('http://localhost:8080/token', formData, {
+        const loginResponse = await axios.post(`${API_BASE_URL}/token`, formData, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
-          withCredentials: true  // Important for CORS
+          withCredentials: true
         });
         console.log('Login response:', loginResponse.data);
         const { access_token } = loginResponse.data;

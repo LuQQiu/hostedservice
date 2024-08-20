@@ -84,11 +84,19 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: "Control Plane Security Group"
-      GroupDescription: "Enable HTTP access via port 80 and SSH access"
+      GroupDescription: "Enable HTTP access via port 80, port 5173 for frontend, and SSH access"
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5173
+          ToPort: 5173
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
           FromPort: 22
@@ -98,6 +106,7 @@ Resources:
       Tags:
         - Key: Name
           Value: ControlPlaneSG
+
 
   ControlPlaneRole:
     Type: AWS::IAM::Role
@@ -176,9 +185,10 @@ Resources:
             INSTANCE_TYPE=${InstanceType}
             SECURITY_GROUP=${ControlPlaneSecurityGroup}
             APPLICATION_ZIP_URL=${ApplicationZipUrl}
+            PUBLIC_DNS_NAME=${PublicDnsName}
 
             # This line allows the file to be sourced in bash without affecting its use in systemd
-            export APPLICATION_FOLDER PYTHONPATH IMAGE_ID PUBLIC_SUBNET KEY_PAIR_NAME INSTANCE_TYPE SECURITY_GROUP APPLICATION_ZIP_URL DATABASE_PATH
+            export APPLICATION_FOLDER PYTHONPATH IMAGE_ID PUBLIC_SUBNET KEY_PAIR_NAME INSTANCE_TYPE SECURITY_GROUP APPLICATION_ZIP_URL DATABASE_PATH PUBLIC_DNS_NAME
             EOF
 
             # Debugging output to verify the new content of conf.env
@@ -212,6 +222,7 @@ Resources:
             KeyName: !Ref KeyName
             InstanceType: !Ref InstanceType
             ControlPlaneSecurityGroup: !Ref ControlPlaneSecurityGroup
+            PublicDnsName: !Ref PublicDnsName
     CreationPolicy:
       ResourceSignal:
         Count: 1

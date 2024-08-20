@@ -5,9 +5,16 @@ from .database_ops import db_router
 
 app = FastAPI()
 
+public_dns_name = os.environ.get('PUBLIC_DNS_NAME', 'localhost')
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        f"http://{public_dns_name}:5173",
+        f"http://{public_dns_name}"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
