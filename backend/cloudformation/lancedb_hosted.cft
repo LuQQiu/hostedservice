@@ -215,6 +215,10 @@ Resources:
             /home/ubuntu/hostedservice/backend/control_plane/launch_frontend.sh
 
             # Signal the status of the setup
+            wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+            tar -xvzf aws-cfn-bootstrap-latest.tar.gz
+            cd aws-cfn-bootstrap-1.4
+            sudo cp bin/* /usr/local/bin/
             /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ControlPlaneInstance --region ${AWS::Region}
 
             echo "User data script completed at $(date)" | tee -a /var/log/user-data.log
