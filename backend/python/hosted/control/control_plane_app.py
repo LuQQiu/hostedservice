@@ -4,6 +4,8 @@ from hosted.common.auth import auth_router
 from .database_ops import db_router
 import os
 
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
 
 public_dns_name = os.environ.get('PUBLIC_DNS_NAME', 'localhost')
