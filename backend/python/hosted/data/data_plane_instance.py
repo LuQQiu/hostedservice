@@ -63,6 +63,7 @@ async def create_database_instance(database_path):
 
     logger.debug("UserData script:")
     logger.debug(user_data_script)
+    instance_name = os.getenv('INSTANCE_NAME', 'DataPlaneInstance')
 
     try:
         # Create the EC2 instance
@@ -75,6 +76,17 @@ async def create_database_instance(database_path):
             SecurityGroupIds=[os.getenv('SECURITY_GROUP')],
             SubnetId=os.getenv('PUBLIC_SUBNET'),
             UserData=encoded_user_data
+            TagSpecifications=[
+                {
+                    'ResourceType': 'instance',
+                    'Tags': [
+                        {
+                            'Key': 'Name',
+                            'Value': instance_name
+                        },
+                    ]
+                },
+            ]
         )
 
         instance = instances[0]

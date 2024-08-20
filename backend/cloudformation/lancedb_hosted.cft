@@ -173,6 +173,9 @@ Resources:
             chown -R ubuntu:ubuntu /home/ubuntu/hostedservice
             chmod 777 /home/ubuntu/hostedservice/backend/conf.env
             
+            # Get public DNS name using instance metadata
+            PUBLIC_DNS_NAME=`curl -s http://169.254.169.254/latest/meta-data/public-hostname`
+            
             cat <<EOF > /home/ubuntu/hostedservice/backend/conf.env
             # This file is compatible with both systemd and bash sourcing
             APPLICATION_FOLDER=/home/ubuntu/hostedservice
@@ -185,10 +188,10 @@ Resources:
             INSTANCE_TYPE=${InstanceType}
             SECURITY_GROUP=${ControlPlaneSecurityGroup}
             APPLICATION_ZIP_URL=${ApplicationZipUrl}
-            PUBLIC_DNS_NAME=${PublicDnsName}
+            PUBLIC_DNS_NAME=`echo $PUBLIC_DNS_NAME`
 
             # This line allows the file to be sourced in bash without affecting its use in systemd
-            export APPLICATION_FOLDER PYTHONPATH IMAGE_ID PUBLIC_SUBNET KEY_PAIR_NAME INSTANCE_TYPE SECURITY_GROUP APPLICATION_ZIP_URL DATABASE_PATH PUBLIC_DNS_NAME
+            export APPLICATION_FOLDER PYTHONPATH IMAGE_ID PUBLIC_SUBNET KEY_PAIR_NAME INSTANCE_TYPE SECURITY_GROUP APPLICATION_ZIP_URL PUBLIC_DNS_NAME
             EOF
 
             # Debugging output to verify the new content of conf.env
@@ -212,7 +215,6 @@ Resources:
             /home/ubuntu/hostedservice/backend/control_plane/launch_frontend.sh
 
             # Signal the status of the setup
-            pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
             /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ControlPlaneInstance --region ${AWS::Region}
 
             echo "User data script completed at $(date)" | tee -a /var/log/user-data.log
@@ -222,12 +224,11 @@ Resources:
             KeyName: !Ref KeyName
             InstanceType: !Ref InstanceType
             ControlPlaneSecurityGroup: !Ref ControlPlaneSecurityGroup
-            PublicDnsName: !Ref PublicDnsName
     CreationPolicy:
       ResourceSignal:
         Count: 1
         Timeout: PT2H
-
+  
 Outputs:
   ControlPlaneURL:
     Description: URL of the Control Plane
